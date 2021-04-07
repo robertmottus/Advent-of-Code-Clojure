@@ -4,55 +4,63 @@
 
 ; https://adventofcode.com/2015/day/2
 
+(defn text->sorted-dimensions
+  {:test (fn []
+           (is= (text->sorted-dimensions "2x3x4") '[2 3 4])
+           (is= (text->sorted-dimensions "1x10x1") '[1 1 10])
+           )}
+  [dimension-text]
+  (as-> dimension-text $
+        (str/split $ #"x")
+        (map read-string $)
+        (sort $)
+        ))
+
 ;A present with dimensions 2x3x4 requires 2*6 + 2*12 + 2*8 = 52 square feet of wrapping paper
 ; plus 6 square feet of slack, for a total of 58 square feet.
 ;A present with dimensions 1x1x10 requires 2*1 + 2*10 + 2*10 = 42 square feet of wrapping paper
 ; plus 1 square foot of slack, for a total of 43 square feet.
-(defn paper-area
+(defn dimensions->paper-area
   {:test (fn []
-           (is= (paper-area "2x3x4") 58)
-           (is= (paper-area "1x1x10") 43)
+           (is= (dimensions->paper-area "2x3x4") 58)
+           (is= (dimensions->paper-area "1x1x10") 43)
            )}
   [box-dimension]
   (as-> box-dimension $
-        (str/split $ #"x")
-        (map read-string $)
-        (sort $)
-        (let [[a b c] $]
-          (+ (* 2 (+ (* a b) (* b c) (* a c)))
-             (* a b))
-          )))
+        (text->sorted-dimensions $)
+        (let [[a b c] $
+              sides (* 2 (+ (* a b) (* b c) (* a c)))
+              slack (* a b)]
+          (+ sides slack))))
 
 ;A present with dimensions 2x3x4 requires 2+2+3+3 = 10 feet of ribbon to wrap the present
 ; plus 2*3*4 = 24 feet of ribbon for the bow, for a total of 34 feet.
 ;A present with dimensions 1x1x10 requires 1+1+1+1 = 4 feet of ribbon to wrap the present
 ; plus 1*1*10 = 10 feet of ribbon for the bow, for a total of 14 feet.
-(defn ribbon
+(defn dimensions->ribbon
   {:test (fn []
-           (is= (ribbon "2x3x4") 34)
-           (is= (ribbon "1x1x10") 14)
+           (is= (dimensions->ribbon "2x3x4") 34)
+           (is= (dimensions->ribbon "1x1x10") 14)
            )}
   [box-dimension]
   (as-> box-dimension $
-        (str/split $ #"x")
-        (map read-string $)
-        (sort $)
-        (let [[a b c] $]
-          (+ (* 2 (+ a b))
-             (* a b c))
-          ))  )
+        (text->sorted-dimensions $)
+        (let [[a b c] $
+              wrap (* 2 (+ a b))
+              bow (* a b c)]
+          (+ wrap bow))))
 
 (defn part1 [box-dimensions]
   (->> box-dimensions
        (str/split-lines)
-       (map paper-area)
+       (map dimensions->paper-area)
        (reduce +)
        ))
 
 (defn part2 [box-dimensions]
   (->> box-dimensions
        (str/split-lines)
-       (map ribbon)
+       (map dimensions->ribbon)
        (reduce +)
        ))
 
