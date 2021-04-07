@@ -1,4 +1,4 @@
-(ns year2015.day01
+(ns year2015.day01.day1
   (:require [ysera.test :refer [is is=]]))
 
 ; https://adventofcode.com/2015/day/1
