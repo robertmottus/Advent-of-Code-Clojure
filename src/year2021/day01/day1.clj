@@ -5,8 +5,7 @@
 ; https://adventofcode.com/2021/day/1
 
 (defn diffs
-  {:doc  "
-  Count the number of times a depth measurement increases"
+  {:doc  "returns the diffs between current and previous element"
    :test (fn []
            (is= (diffs [199 200 208 210 200 207 240 269 260 263]) '(1 8 2 -10 7 33 29 -9 3))
            (is= (diffs [607 618 618 617 647 716 769 792]) '(11 0 -1 30 69 53 23))
@@ -15,29 +14,14 @@
     (map - (drop 1 m) (drop-last 1 m))
   )
 
-(defn floating-average-3
-  {:doc  "
-  Count the number of times a depth measurement increases"
+(defn moving-sum-3
+  {:doc  "Sum every triple of depths, in steps of one, i.e. index 123 234 345 etc."
    :test (fn []
-           (is= (floating-average-3 [199 200 208 210 200 207 240 269 260 263])
+           (is= (moving-sum-3 [199 200 208 210 200 207 240 269 260 263])
                 '(607 618 618 617 647 716 769 792))
            )}
   [m]
-    (map + (drop-last 2 m) (drop 1 (drop-last 1 m)) (drop 2 m))
-  )
-
-(defn increments
-  {:doc  "
-  Count the number of times a depth measurement increases"
-   :test (fn []
-           (is= (increments [1 8 2 -10 7 33 29 -9 3]) 7)
-           (is= (increments [11 0 -1 30 69 53 23]) 5)
-           )}
-  [diffs]
-  (->> diffs
-       (filter pos?)
-       (count)
-       )
+    (map (partial reduce +) (partition 3 1 m))
   )
 
 (defn part1
@@ -46,7 +30,8 @@
        (str/split-lines)
        (map read-string)
        (diffs)
-       (increments)
+       (filter pos?)
+       (count)
        )
   )
 
@@ -55,9 +40,10 @@
   (->> nums
        (str/split-lines)
        (map read-string)
-       (floating-average-3)
+       (moving-sum-3)
        (diffs)
-       (increments)
+       (filter pos?)
+       (count)
        )
   )
 
