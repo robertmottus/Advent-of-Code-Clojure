@@ -4,18 +4,15 @@
 
 ; https://adventofcode.com/2021/day/2
 
-(defn moves2pos-p1
-  {:doc  "
-  Convert moves list to position and depth"
+(defn moves2pos-depth
+  {:doc "Convert list of moves to horizontal position and depth"
    :test (fn []
-           (is= (moves2pos-p1 '([forward 5] [down 5] [forward 8] [up 3] [down 8] [forward 2])) [15 10])
+           (is= (moves2pos-depth '([forward 5] [down 5] [forward 8] [up 3] [down 8] [forward 2])) [15 10])
            )}
   [m]
   (reduce #(let [
-                 cur-pos (first %1)
-                 cur-depth (second %1)
-                 dir (first %2)
-                 steps (second %2)
+                 [cur-pos cur-depth] %1
+                 [dir steps] %2
                  new-pos (+ cur-pos (if (= dir (symbol "forward")) steps 0))
                  new-depth (+ cur-depth
                               (if (= dir (symbol "down")) steps 0)
@@ -25,27 +22,24 @@
              ) [0 0] m)
   )
 
-(defn moves2pos-p2
+(defn moves2pos-depth-aim
   {:doc  "
-  Convert moves list to position, depth and aim"
+  Convert list of actions (moves and aim changes) to end position (and last value of aim)"
    :test (fn []
-           (is= (moves2pos-p2 '([forward 5] [down 5] [forward 8] [up 3] [down 8] [forward 2])) [15 60 10])
+           (is= (moves2pos-depth-aim '([forward 5] [down 5] [forward 8] [up 3] [down 8] [forward 2])) [15 60 10])
            )}
-  [m]
+  [action]
   (reduce #(let [
-                 cur-pos (nth %1 0)
-                 cur-depth (nth %1 1)
-                 cur-aim (nth %1 2)
-                 dir (first %2) ; forward up down
-                 steps (second %2)
+                 [cur-horiz-pos cur-depth cur-aim] %1
+                 [action-type steps] %2
                  new-aim (+ cur-aim
-                              (if (= dir (symbol "down")) steps 0)
-                              (if (= dir (symbol "up")) (- steps) 0))
-                 new-pos   (+ cur-pos   (if (= dir (symbol "forward")) steps 0))
-                 new-depth (+ cur-depth (if (= dir (symbol "forward")) (* new-aim steps) 0))
+                              (if (= action-type (symbol "down")) steps 0)
+                              (if (= action-type (symbol "up")) (- steps) 0))
+                 new-pos   (+ cur-horiz-pos   (if (= action-type (symbol "forward")) steps 0))
+                 new-depth (+ cur-depth (if (= action-type (symbol "forward")) (* new-aim steps) 0))
                  ]
              (vector new-pos new-depth new-aim)
-             ) [0 0 0] m)
+             ) [0 0 0] action)
   )
 
 (defn input2list
@@ -67,8 +61,8 @@
   [nums]
   (->> nums
        (input2list)
-       (moves2pos-p1)
-       (reduce * 1)
+       (moves2pos-depth)
+       (reduce *)
        )
   )
 
@@ -76,9 +70,9 @@
   [nums]
   (->> nums
        (input2list)
-       (moves2pos-p2)
-       (drop-last) ; drop last item, aim
-       (reduce * 1)
+       (moves2pos-depth-aim)
+       (drop-last) ; drop aim
+       (reduce *)
        )
   )
 
