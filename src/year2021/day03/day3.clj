@@ -1,19 +1,19 @@
 (ns year2021.day03.day3
-  (:require [ysera.test :refer [is is= is-not]]
+  (:require [ysera.test :refer [is=]]
             [clojure.string :as str :only [index-of]]))
 
 ; https://adventofcode.com/2021/day/3
 
-(defn char2num
-  {:test (fn [] (is= (char2num \1) 1))}
+(defn char->num
+  {:test (fn [] (is= (char->num \1) 1))}
   [c]
   (- (int c) (int \0))
   )
 
-(defn report2matrix
+(defn report->matrix
   {:doc "Converts report on string format to matrix"
    :test (fn []
-           (is= (report2matrix "11\n00\n11") [[1 1]
+           (is= (report->matrix "11\n00\n11") [[1 1]
                                               [0 0]
                                               [1 1]])
            )}
@@ -21,7 +21,7 @@
   (->> str
        (str/split-lines)
        (map vec)
-       (map #(map char2num %1))
+       (map #(map char->num %1))
        )
   )
 
@@ -53,34 +53,41 @@
   (- 1 (most-common-bit bits))
   )
 
-(defn bin2dec [n]
+(defn bin->dec [n]
   (read-string (str "2r" n))
   )
 
-(def test-report (report2matrix "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010"))
+(def test-report "00100\n11110\n10110\n10111\n10101\n01111\n00111\n11100\n10000\n11001\n00010\n01010")
+(def test-matrix (report->matrix test-report))
 
-(defn power-consumtion
-  {:doc "Gamma  rate (most common bits) times epsilon rate (least common bits)"
+(defn power-consumption
+  {:doc "Gamma rate (most common bits) times epsilon rate (least common bits)"
    :test (fn []
-           (is= (power-consumtion [[1 0]
+           (is= (power-consumption [[1 0]
                                    [1 0]
-                                   [0 1]]) (* (bin2dec "10") (bin2dec "01")))
-           (is= (power-consumtion test-report) 198) ; from exercise example
+                                   [0 1]]) (* (bin->dec "10") (bin->dec "01")))
+           (is= (power-consumption test-matrix) 198) ; from exercise example
            )
    }
   [report-matrix]
   (let [bits-matrix (transpose report-matrix)
-        gamma-rate (bin2dec(apply str (map most-common-bit bits-matrix)))
-        epsilon-rate (bin2dec(apply str (map least-common-bit bits-matrix)))]
+        gamma-rate (bin->dec (apply str (map most-common-bit bits-matrix)))
+        epsilon-rate (bin->dec (apply str (map least-common-bit bits-matrix)))]
         (* gamma-rate epsilon-rate))
   )
 
 (defn reduce-matrix
-  {:test (fn []
+  {:doc "For each column, calculate most-common-bit (if not oxygene least-common-bit), then keep only rows with
+   that bit set. When there is only one row left, return it."
+   :test (fn []
            (is= (reduce-matrix [[1 0]
                                 [1 1]
                                 [0 1]] true)
                 [1 1])
+           (is= (reduce-matrix [[1 0]
+                                [1 1]
+                                [0 1]] false)
+                [0 1])
            )}
   ([mtx oxg?] (reduce-matrix mtx oxg? 0))
   ([mtx oxg? n]
@@ -94,48 +101,33 @@
     )))
 
 (defn oxygen-generator
-  {:doc ""
-   :test (fn []
-           (is= (oxygen-generator test-report)
-                23) ; from exercise example
-           )}
+  {:test (fn [] (is= (oxygen-generator test-matrix) 23) (comment "from exercise example") )}
   [report-matrix]
-  (bin2dec (apply str (reduce-matrix report-matrix true)))
+  (bin->dec (apply str (reduce-matrix report-matrix true)))
   )
 
 (defn co2-scrubber-rating
-  {:doc ""
-   :test (fn []
-           (is= (co2-scrubber-rating test-report)
-                10) ; from exercise example
-           )}
+  {:test (fn [] (is= (co2-scrubber-rating test-matrix) 10) (comment "from exercise example") )}
   [report-matrix]
-  (bin2dec (apply str (reduce-matrix report-matrix false)))
+  (bin->dec (apply str (reduce-matrix report-matrix false)))
   )
 
-(defn life-support-rating
-  {:doc ""
-   :test (fn []
-           (is= (life-support-rating test-report)
-                230) ; from exercise example
-           )}
-  [report-matrix]
-  (* (oxygen-generator report-matrix) (co2-scrubber-rating report-matrix))
-  )
 
 (defn part1
   [nums]
   (->> nums
-       (report2matrix)
-       (power-consumtion)
+       (report->matrix)
+       (power-consumption)
        )
   )
 
 (defn part2
+  {:doc "life-support-rating"
+   :test (fn [] (is= (part2 test-report) 230) (comment "from exercise example") )}
   [nums]
-  (->> nums
-       (report2matrix)
-       (life-support-rating)
+  (as-> nums $
+       (report->matrix $)
+       (* (oxygen-generator $) (co2-scrubber-rating $))
        )
   )
 
