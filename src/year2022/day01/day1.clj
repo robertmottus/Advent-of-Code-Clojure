@@ -1,5 +1,5 @@
 (ns year2022.day01.day1
-  (:require [ysera.test :refer [is is= is-not]]
+  (:require [ysera.test :refer [is=]]
             [clojure.string :as str :only [index-of]]))
 
 ; https://adventofcode.com/2022/day/1
@@ -40,7 +40,7 @@
        (sum-calories)
        (sort)
        (take-last 3)
-       (apply +)
+       (reduce +)
        )
   )
 
