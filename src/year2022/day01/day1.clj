@@ -12,11 +12,9 @@
            )}
   [carried-calories]
   (as-> carried-calories $
-        (str/split $ #"\n\n")
-        (map #(str/split % #"\n") $)
+        (str/split $ #"\r?\n\r?\n")
+        (map str/split-lines $)
         (reduce #(conj %1 (reduce + (map read-string %2))) [] $)
-        ;(reduce #(conj %1 %2) [] $)
-        ;(map #(apply + %) $)
         )
   )
 
